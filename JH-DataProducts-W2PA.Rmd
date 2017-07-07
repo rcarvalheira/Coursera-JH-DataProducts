@@ -1,0 +1,83 @@
+---
+title: "JH - Data Products - W2Q - Leaflet Markdown"
+author: "Rafael Carvalheira"
+date: "5 de julho de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/Rafael/Documents/GitHub/Coursera-JH-DataProducts/")
+```
+
+## What
+
+I will show some of the parks available in my city.
+
+For this I choose the most important close to me.
+
+City park data was retrieved from http://geosampa.prefeitura.sp.gov.br
+But i was not able to directly input SHP file, so I just got parks area.
+
+The one State park data was retrieved from it's own site http://www.ambiente.sp.gov.br/parquevillalobos/o-parque-hoje/
+
+Geo location of all was manually retrieved directly from google maps.
+
+
+
+#The Data
+
+Best/Biggest parks arround:
+
+Name, Latitude, Longitude, Area (m²), Maintained by
+
+Villa Lobos, -23.545742, -46.720601, 732000
+
+Ibirapuera, -23.587381, -46.657641, 1584000
+
+People's, -23.587982, -46.688759, 116383
+
+Alfredo Volpi, -23.587688, -46.702737, 132111
+
+Burle Marx, -23.632993, -46.721715, 189000
+
+
+
+##Assigning data to data.frame for leaflet
+```{r pressure, results=FALSE, warning=FALSE}
+parks <- data.frame("Name"="Villa Lobos","Lat"=-23.545742,"Lng"=-46.720601,"Area"=732000,"Maintained"="State", stringsAsFactors = FALSE)
+parks <- rbind(parks,c("Ibirapuera Park", -23.587381,-46.657641, 1584000, "City"))
+parks <- rbind(parks,c("People's Park", -23.587982,-46.688759, 116383, "City"))
+parks <- rbind(parks,c("Alfredo Volpi Park", -23.587688,-46.702737, 132111, "City"))
+parks <- rbind(parks,c("Burle Marx Park", -23.632993,-46.721715, 189000, "City"))
+
+parks$Lat <- as.numeric(parks$Lat)
+parks$Lng <- as.numeric(parks$Lng)
+parks$Area <- as.numeric(parks$Area)
+parks$Maintained <- as.factor(parks$Maintained)
+
+library(leaflet)
+```
+
+
+#Doing the map
+
+For this map I will use circles.
+
+The size of the circle is proportional to the area of the park.
+
+The color of the circle is accordingly with who maintain it.
+
+
+
+```{r, message=FALSE}
+
+factpal <- colorFactor(c("Blue","Red"), parks$Maintained)
+
+parks %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(weight = 2, radius = sqrt(parks$Area), popup = parks$Name, color=~factpal(Maintained)) %>%
+    addLegend(labels = c("State", "City"), colors = c("Red","Blue"))
+
+```
