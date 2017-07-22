@@ -1,0 +1,112 @@
+---
+title: "JH-Data Products - PA - Final - Brazilian National Soccer Championship 2016"
+author: "Rafael Carvalheira"
+date: "22 de julho de 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(shiny)
+library(dplyr)
+library(tidyr)
+```
+
+
+## Understand the evolution of the Championship
+
+- Analyse the graph understanding each round
+- Follow your team's path to sucess or destruction
+
+```{r, echo=FALSE}
+    #setwd("GitHub/Coursera-JH-DataProducts/JH-DP-PA-Final/")
+    cb16 <- read.csv("campeonatoBrasileiro2016.csv", sep = "," )
+    names(cb16) <- gsub("X","",names(cb16))
+    cb16N <- cb16 %>% gather(Round, Position, -Times)
+    cb16N$Round <- as.numeric(cb16N$Round)
+
+          # get the range for the x and y axis 
+      xrange <- range(cb16N$Round) 
+      yrange <- range(cb16N$Position) 
+      times <- cb16N[cb16N$Round==xrange[2],]
+      ntimes <- length(unique(cb16N$Times))
+
+      #Build the plot
+      plot(cb16N$Round,cb16N$Position,ylim=c(ntimes,1), type = "n"
+           ,xlab = "Round", ylab="Position")
+      colors <- rainbow(ntimes) 
+      linetype <- c(1:ntimes)
+      times <- data.frame(times=times$Times,colors=colors,linetype=linetype, finalPos=times$Position)
+      
+      # add lines 
+      for (i in 1:ntimes) { 
+          time <- subset(cb16N, Times == times$times[i]) 
+          lines(time$Round, time$Position, type="l", lwd=1.5,
+                lty=times$linetype[i]
+                , col=times$colors[i]) 
+      }
+      # add a legend 
+      legend("right", legend=times$times[1:ntimes], cex=0.8, col=colors,
+             lty=times$linetype, title="Team Positions over Rounds")
+```
+
+## Understand your team behavior
+
+- How constant was your Team?
+
+```{r, echo=FALSE}
+    #setwd("GitHub/Coursera-JH-DataProducts/JH-DP-PA-Final/")
+    cb16 <- read.csv("campeonatoBrasileiro2016.csv", sep = "," )
+    names(cb16) <- gsub("X","",names(cb16))
+    cb16N <- cb16 %>% gather(Round, Position, -Times)
+    cb16N$Round <- as.numeric(cb16N$Round)
+
+          # get the range for the x and y axis 
+      xrange <- range(cb16N$Round) 
+      yrange <- range(cb16N$Position) 
+      times <- cb16N[cb16N$Round==xrange[2],]
+      ntimes <- length(unique(cb16N$Times))
+
+      #Build the plot
+      plot(cb16N$Round,cb16N$Position,ylim=c(ntimes,1), type = "n"
+           ,xlab = "Round", ylab="Position")
+      colors <- rainbow(ntimes) 
+      linetype <- c(1:ntimes)
+      times <- data.frame(times=times$Times,colors=colors,linetype=linetype, finalPos=times$Position)
+      
+      # add line 
+
+          time <- subset(cb16N, Times == times$times[times$times == "Flamengo"]) 
+          lines(time$Round, time$Position, type="l", lwd=1.5,
+                lty=times$linetype[times$times == "Flamengo"]
+                , col=times$colors[times$times == "Flamengo"]) 
+
+      # add a legend 
+      legend("right", legend=times$times[times$times == "Flamengo"], cex=0.8
+             , col=times$colors[times$times == "Flamengo"],
+             lty=times$linetype[times$times == "Flamengo"], title="Team Positions over Rounds")
+```
+
+
+## Get the final results
+
+- Understand how the competition ended
+```{r, echo = TRUE}
+head(times[,c("times","finalPos")])
+```
+
+## Lead the conversation with data!
+
+- Be the one to know all the answers!
+
+```{r}
+    teamName <- "Flamengo"
+     firsts <- nrow(cb16N[cb16N$Position==1 & cb16N$Times==teamName,])
+     best <- min(cb16N[cb16N$Times==teamName,"Position"])
+     worst <- max(cb16N[cb16N$Times==teamName, "Position"])
+```
+ 
+* Your team: `r teamName` 
+* How many weeks leading the championship? `r firsts` 
+* Whats the best position? `r best` 
+* Whats the wrost position? `r worst` 
