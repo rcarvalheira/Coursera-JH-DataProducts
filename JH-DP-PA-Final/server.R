@@ -11,32 +11,33 @@ library(shiny)
 library(dplyr)
 library(tidyr)
 
-# Define server logic required to draw a histogram
+
+
 shinyServer(function(input, output) {
-    #setwd("GitHub/Coursera-JH-DataProducts/JH-DP-PA-Final/")
     cb16 <- read.csv("campeonatoBrasileiro2016.csv", sep = "," )
     names(cb16) <- gsub("X","",names(cb16))
     cb16N <- cb16 %>% gather(Round, Position, -Times)
     cb16N$Round <- as.numeric(cb16N$Round)
+    xrange <- range(cb16N$Round) 
+    yrange <- range(cb16N$Position) 
+    times <- cb16N[cb16N$Round==xrange[2],]
+    ntimes <- length(unique(cb16N$Times))
+    colors <- rainbow(ntimes) 
+    linetype <- c(1:ntimes)
+    times <- data.frame(times=times$Times,colors=colors,linetype=linetype, finalPos=times$Position)
 
     
   output$distPlot <- renderPlot({
       
       # get the range for the x and y axis 
-      xrange <- range(cb16N$Round) 
-      yrange <- range(cb16N$Position) 
-      times <- cb16N[cb16N$Round==xrange[2],]
-      ntimes <- length(unique(cb16N$Times))
+
       timesSelected <- input$teams
       ntimesSelected <- length(input$teams)
-      
       
       #Build the plot
       plot(cb16N$Round,cb16N$Position,ylim=c(ntimes,1), xlim=c(xrange[1],xrange[2]+3.5), type = "n"
            ,xlab = "Round", ylab="Position")
-      colors <- rainbow(ntimes) 
-      linetype <- c(1:ntimes)
-      times <- data.frame(times=times$Times,colors=colors,linetype=linetype, finalPos=times$Position)
+
       
       # add lines 
       for (i in 1:ntimesSelected) { 
@@ -45,10 +46,15 @@ shinyServer(function(input, output) {
                 lty=times$linetype[times$times==timesSelected[i]]
                 , col=times$colors[times$times==timesSelected[i]]) 
       }
-      # add a legend 
-      legend(xrange[2]+0.5,yrange[1], timesSelected[1:ntimesSelected], cex=0.8, col=colors,
-             lty=times$linetype[times$times==timesSelected], title="Team Positions over Rounds")
-    }, height = 400)
+      #add a legend
+      legend(x = xrange[2]+0.5,y = yrange[1], legend = timesSelected, cex=0.8
+             ,col=times$colors[times$times==timesSelected]
+             ,lty=times$linetype[times$times==timesSelected]
+             ,title="Team Positions over Rounds")
+        }
+      , height = 450)
+  
+  
   output$mytable = renderDataTable({
       times[times$times==input$teams,c("times","finalPos")]
   })
